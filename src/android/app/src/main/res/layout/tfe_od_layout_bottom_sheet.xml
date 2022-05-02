@@ -168,51 +168,11 @@
         android:layout_marginTop="10dp"
         android:background="@android:color/darker_gray" />
 
-    <RelativeLayout
+    <Button
+        android:id="@+id/pause"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:orientation="horizontal">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:text="Threads"
-            android:textColor="@android:color/black" />
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:background="@drawable/rectangle"
-            android:gravity="center"
-            android:orientation="horizontal"
-            android:padding="4dp">
-
-            <ImageView
-                android:id="@+id/minus"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/ic_baseline_remove" />
-
-            <TextView
-                android:id="@+id/threads"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="10dp"
-                android:layout_marginRight="10dp"
-                android:text="4"
-                android:textColor="@android:color/black"
-                android:textSize="14sp" />
-
-            <ImageView
-                android:id="@+id/plus"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/ic_baseline_add" />
-        </LinearLayout>
-    </RelativeLayout>
+        android:text="Capture" />
 
     <View
         android:layout_width="match_parent"

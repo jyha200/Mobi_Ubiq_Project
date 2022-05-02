@@ -47,10 +47,12 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.Button;
 import androidx.annotation.NonNull;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.tensorflow.lite.examples.detection.env.ImageUtils;
 import org.tensorflow.lite.examples.detection.env.Logger;
@@ -84,9 +86,10 @@ public abstract class CameraActivity extends AppCompatActivity
 
   protected TextView[] guideTextView = new TextView[6];
   protected ImageView bottomSheetArrowImageView;
-  private ImageView plusImageView, minusImageView;
+  //private ImageView plusImageView, minusImageView;
   private SwitchCompat apiSwitchCompat;
-  private TextView threadsTextView;
+  //private TextView threadsTextView;
+  private Button captureButton;
 
   @Override
   protected void onCreate(final Bundle savedInstanceState) {
@@ -105,9 +108,9 @@ public abstract class CameraActivity extends AppCompatActivity
       requestPermission();
     }
 
-    threadsTextView = findViewById(R.id.threads);
-    plusImageView = findViewById(R.id.plus);
-    minusImageView = findViewById(R.id.minus);
+//    threadsTextView = findViewById(R.id.threads);
+//    plusImageView = findViewById(R.id.plus);
+//    minusImageView = findViewById(R.id.minus);
     apiSwitchCompat = findViewById(R.id.api_info_switch);
     bottomSheetLayout = findViewById(R.id.bottom_sheet_layout);
     gestureLayout = findViewById(R.id.gesture_layout);
@@ -169,9 +172,16 @@ public abstract class CameraActivity extends AppCompatActivity
     guideTextView[5] = findViewById(R.id.guide_6_text);
 
     apiSwitchCompat.setOnCheckedChangeListener(this);
+    captureButton = findViewById(R.id.pause);
+    captureButton.setOnClickListener(new Button.OnClickListener() {
+      @Override
+      public void onClick(View view) {
+        toggleStopped();
+      }
+    });
 
-    plusImageView.setOnClickListener(this);
-    minusImageView.setOnClickListener(this);
+    //plusImageView.setOnClickListener(this);
+    //minusImageView.setOnClickListener(this);
   }
 
   protected int[] getRgbBytes() {
@@ -510,23 +520,23 @@ public abstract class CameraActivity extends AppCompatActivity
 
   @Override
   public void onClick(View v) {
-    if (v.getId() == R.id.plus) {
-      String threads = threadsTextView.getText().toString().trim();
-      int numThreads = Integer.parseInt(threads);
-      if (numThreads >= 9) return;
-      numThreads++;
-      threadsTextView.setText(String.valueOf(numThreads));
-      setNumThreads(numThreads);
-    } else if (v.getId() == R.id.minus) {
-      String threads = threadsTextView.getText().toString().trim();
-      int numThreads = Integer.parseInt(threads);
-      if (numThreads == 1) {
-        return;
-      }
-      numThreads--;
-      threadsTextView.setText(String.valueOf(numThreads));
-      setNumThreads(numThreads);
-    }
+//    if (v.getId() == R.id.plus) {
+//      String threads = threadsTextView.getText().toString().trim();
+//      int numThreads = Integer.parseInt(threads);
+//      if (numThreads >= 9) return;
+//      numThreads++;
+//      threadsTextView.setText(String.valueOf(numThreads));
+//      setNumThreads(numThreads);
+//    } else if (v.getId() == R.id.minus) {
+//      String threads = threadsTextView.getText().toString().trim();
+//      int numThreads = Integer.parseInt(threads);
+//      if (numThreads == 1) {
+//        return;
+//      }
+//      numThreads--;
+//      threadsTextView.setText(String.valueOf(numThreads));
+//      setNumThreads(numThreads);
+//    }
   }
 
   protected void showFrameInfo(String frameInfo) {
@@ -554,6 +564,7 @@ public abstract class CameraActivity extends AppCompatActivity
   protected abstract Size getDesiredPreviewFrameSize();
 
   protected abstract void setNumThreads(int numThreads);
+  protected abstract void toggleStopped();
 
   protected abstract void setUseNNAPI(boolean isChecked);
 }

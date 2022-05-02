@@ -41,12 +41,12 @@ public class MultiBoxTracker {
   private static final float MIN_SIZE = 16.0f;
   private static final int[] COLORS = {
     Color.BLUE,
-    Color.RED,
-    Color.GREEN,
-    Color.YELLOW,
-    Color.CYAN,
-    Color.MAGENTA,
-    Color.WHITE,
+    Color.BLUE,
+    Color.BLUE,
+    Color.BLUE,
+    Color.BLUE,
+    Color.BLUE,
+    Color.BLUE,
     Color.parseColor("#55FF55"),
     Color.parseColor("#FFA500"),
     Color.parseColor("#FF8888"),
@@ -143,14 +143,14 @@ public class MultiBoxTracker {
       float cornerSize = Math.min(trackedPos.width(), trackedPos.height()) / 8.0f;
       canvas.drawRoundRect(trackedPos, cornerSize, cornerSize, boxPaint);
 
-      final String labelString =
-          !TextUtils.isEmpty(recognition.title)
-              ? String.format("%s %.2f", recognition.title, (100 * recognition.detectionConfidence))
-              : String.format("%.2f", (100 * recognition.detectionConfidence));
+      final String labelString = String.format("%s", recognition.title);
+//          !TextUtils.isEmpty(recognition.title)
+//              ? String.format("%s %.2f", recognition.title, (100 * recognition.detectionConfidence))
+//              : String.format("%.2f", (100 * recognition.detectionConfidence));
       //            borderedText.drawText(canvas, trackedPos.left + cornerSize, trackedPos.top,
       // labelString);
       borderedText.drawText(
-          canvas, trackedPos.left + cornerSize, trackedPos.top, labelString + "%", boxPaint);
+          canvas, trackedPos.left + cornerSize, trackedPos.top, labelString, boxPaint);
     }
   }
 
@@ -190,7 +190,7 @@ public class MultiBoxTracker {
 
     for (final Pair<Float, Recognition> potential : rectsToTrack) {
       final TrackedRecognition trackedRecognition = new TrackedRecognition();
-      trackedRecognition.detectionConfidence = potential.first;
+      //trackedRecognition.detectionConfidence = potential.first;
       trackedRecognition.location = new RectF(potential.second.getLocation());
       trackedRecognition.title = potential.second.getTitle();
       trackedRecognition.color = COLORS[trackedObjects.size()];
@@ -204,7 +204,7 @@ public class MultiBoxTracker {
 
   private static class TrackedRecognition {
     RectF location;
-    float detectionConfidence;
+    //float detectionConfidence;
     int color;
     String title;
   }

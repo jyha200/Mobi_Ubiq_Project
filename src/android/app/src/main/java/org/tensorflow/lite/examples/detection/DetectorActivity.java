@@ -32,8 +32,12 @@ import android.util.TypedValue;
 import android.widget.Toast;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Collections;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.tensorflow.lite.examples.detection.customview.OverlayView;
 import org.tensorflow.lite.examples.detection.customview.OverlayView.DrawCallback;
 import org.tensorflow.lite.examples.detection.env.BorderedText;
@@ -198,75 +202,79 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
         new Runnable() {
           @Override
           public void run() {
-            LOGGER.i("Running detection on image " + currTimestamp);
-            final long startTime = SystemClock.uptimeMillis();
-            final List<Detector.Recognition> results = detector.recognizeImage(croppedBitmap);
-            lastProcessingTimeMs = SystemClock.uptimeMillis() - startTime;
+            if (stopped == false) {
+              LOGGER.i("Running detection on image " + currTimestamp);
+              final long startTime = SystemClock.uptimeMillis();
+              final List<Detector.Recognition> results = detector.recognizeImage(croppedBitmap);
+              lastProcessingTimeMs = SystemClock.uptimeMillis() - startTime;
 
-            cropCopyBitmap = Bitmap.createBitmap(croppedBitmap);
-            final Canvas canvas = new Canvas(cropCopyBitmap);
-            final Paint paint = new Paint();
-            paint.setColor(Color.RED);
-            paint.setStyle(Style.STROKE);
-            paint.setStrokeWidth(2.0f);
+              cropCopyBitmap = Bitmap.createBitmap(croppedBitmap);
+              final Canvas canvas = new Canvas(cropCopyBitmap);
+              final Paint paint = new Paint();
+              paint.setColor(Color.RED);
+              paint.setStyle(Style.STROKE);
+              paint.setStrokeWidth(2.0f);
 
-            float minimumConfidence = MINIMUM_CONFIDENCE_TF_OD_API;
-            switch (MODE) {
-              case TF_OD_API:
-                minimumConfidence = MINIMUM_CONFIDENCE_TF_OD_API;
-                break;
-            }
-
-            final List<Detector.Recognition> mappedRecognitions =
-                new ArrayList<Detector.Recognition>();
-            int i = 0;
-            for(int k = 0;k<6;k++) {
-              guide[k] = "";
-              shown_idx[k] = "";
-            }
-            for (final Detector.Recognition result : results) {
-              final RectF location = result.getLocation();
-              if (location != null && result.getConfidence() >= minimumConfidence) {
-                canvas.drawRect(location, paint);
-                int idx = Integer.parseInt(result.getId());
-                boolean do_not_show = false;
-                String title = result.getTitle();
-                for (int j = 0 ; j < 6 ; j++) {
-                  if (shown_idx[j] == title) {
-                    do_not_show = true;
-                  }
-                }
-                if (do_not_show == false) {
-                  if (i < 6) {
-                    guide[i] = reference_guide.get(title);
-                    shown_idx[i] = title;
-                    i++;
-                  }
-                }
-                cropToFrameTransform.mapRect(location);
-
-                result.setLocation(location);
-                mappedRecognitions.add(result);
+              float minimumConfidence = MINIMUM_CONFIDENCE_TF_OD_API;
+              switch (MODE) {
+                case TF_OD_API:
+                  minimumConfidence = MINIMUM_CONFIDENCE_TF_OD_API;
+                  break;
               }
-            }
 
-            tracker.trackResults(mappedRecognitions, currTimestamp);
-            trackingOverlay.postInvalidate();
-
-            computingDetection = false;
-
-            runOnUiThread(
-                new Runnable() {
-                  @Override
-                  public void run() {
-                    for (int i = 1; i <= 6;i++) {
-                      showGuide(i, guide[i - 1]);
+              final List<Detector.Recognition> mappedRecognitions =
+                      new ArrayList<Detector.Recognition>();
+              int i = 0;
+              Collections.sort(results);
+              for (final Detector.Recognition result : results) {
+                final RectF location = result.getLocation();
+                if (location != null && result.getConfidence() >= minimumConfidence) {
+                  canvas.drawRect(location, paint);
+                  int idx = Integer.parseInt(result.getId());
+                  boolean do_not_show = false;
+                  String title = result.getTitle();
+                  for (int j = 0; j < 6; j++) {
+                    if (shown_idx[j].equals(title)) {
+                      do_not_show = true;
+                      break;
                     }
-                    //showFrameInfo(previewWidth + "x" + previewHeight);
-                    //showCropInfo(cropCopyBitmap.getWidth() + "x" + cropCopyBitmap.getHeight());
-                    //showInference(lastProcessingTimeMs + "ms");
                   }
-                });
+                  if (do_not_show == false) {
+                    if (i < 6) {
+                      guide[i] = reference_guide.get(title);
+                      shown_idx[i] = title;
+                      i++;
+                    }
+                  }
+                  cropToFrameTransform.mapRect(location);
+
+                  result.setLocation(location);
+                  mappedRecognitions.add(result);
+                }
+              }
+              for (; i < 6; i++) {
+                guide[i] = "";
+                shown_idx[i] = "";
+              }
+
+              tracker.trackResults(mappedRecognitions, currTimestamp);
+              trackingOverlay.postInvalidate();
+
+              computingDetection = false;
+
+            }
+            runOnUiThread(
+                    new Runnable() {
+                      @Override
+                      public void run() {
+                        for (int i = 1; i <= 6; i++) {
+                          showGuide(i, guide[i - 1]);
+                        }
+                        //showFrameInfo(previewWidth + "x" + previewHeight);
+                        //showCropInfo(cropCopyBitmap.getWidth() + "x" + cropCopyBitmap.getHeight());
+                        //showInference(lastProcessingTimeMs + "ms");
+                      }
+                    });
           }
         });
   }
@@ -303,6 +311,11 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
         });
   }
 
+  private Boolean stopped = false;
+  @Override
+  protected void toggleStopped() {
+    stopped = !stopped;
+  }
   @Override
   protected void setNumThreads(final int numThreads) {
     runInBackground(() -> detector.setNumThreads(numThreads));
