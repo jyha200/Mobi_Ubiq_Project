@@ -1,88 +1,72 @@
-# TensorFlow Lite image classification Android example application
+# TensorFlow Lite Object Detection Android Demo
 
-## Overview
+### Overview
 
-This is an example application for
-[TensorFlow Lite](https://tensorflow.org/lite) on Android. It uses
-[Image classification](https://www.tensorflow.org/lite/models/image_classification/overview)
-to continuously classify whatever it sees from the device's back camera.
-Inference is performed using the TensorFlow Lite Java API. The demo app
-classifies frames in real-time, displaying the top most probable
-classifications. It allows the user to choose between a floating point or
-[quantized](https://www.tensorflow.org/lite/performance/post_training_quantization)
-model, select the thread count, and decide whether to run on CPU, GPU, or via
-[NNAPI](https://developer.android.com/ndk/guides/neuralnetworks).
+This is a camera app that continuously detects the objects (bounding boxes and
+classes) in the frames seen by your device's back camera, using a quantized
+[MobileNet SSD](https://github.com/tensorflow/models/tree/master/research/object_detection)
+model trained on the [COCO dataset](http://cocodataset.org/). These instructions
+walk you through building and running the demo on an Android device.
 
-These instructions walk you through building and running the demo on an Android
-device. For an explanation of the source, see
-[TensorFlow Lite Android image classification example](EXPLORE_THE_CODE.md).
+The model files are downloaded via Gradle scripts when you build and run. You
+don't need to do any steps to download TFLite models into the project
+explicitly.
+
+Application can run either on device or emulator.
 
 <!-- TODO(b/124116863): Add app screenshot. -->
 
-### Model
+## Build the demo using Android Studio
 
-We provide 4 models bundled in this App: MobileNetV1 (float), MobileNetV1
-(quantized), EfficientNetLite (float) and EfficientNetLite (quantized).
-Particularly, we chose "mobilenet_v1_1.0_224" and "efficientnet-lite0".
-MobileNets are classical models, while EfficientNets are the latest work. The
-chosen EfficientNet (lite0) has comparable speed with MobileNetV1, and on the
-ImageNet dataset, EfficientNet-lite0 out performs MobileNetV1 by ~4% in terms of
-top-1 accuracy.
+### Prerequisites
 
-For details of the model used, visit
-[Image classification](https://www.tensorflow.org/lite/models/image_classification/overview).
+*   If you don't have already, install
+    **[Android Studio](https://developer.android.com/studio/index.html)**,
+    following the instructions on the website.
 
-Downloading, extracting, and placing the model in the assets folder is managed
-automatically by download.gradle.
+*   You need an Android device and Android development environment with minimum
+    API 21.
 
-## Requirements
+*   Android Studio 4.2 or above.
 
-*   Android Studio 4.2 or above (installed on a Linux, Mac or Windows machine)
+### Building
 
-*   Android device in
-    [developer mode](https://developer.android.com/studio/debug/dev-options)
-    with USB debugging enabled
+*   Open Android Studio, and from the Welcome screen, select Open an existing
+    Android Studio project.
 
-*   USB cable (to connect Android device to your computer)
+*   From the Open File or Project window that appears, navigate to and select
+    the tensorflow-lite/examples/object_detection/android directory from
+    wherever you cloned the TensorFlow Lite sample GitHub repo. Click OK.
 
-## Build and run
+*   If it asks you to do a Gradle Sync, click OK.
 
-### Step 1. Clone the TensorFlow examples source code
+*   You may also need to install various platforms and tools, if you get errors
+    like "Failed to find target with hash string 'android-21'" and similar.
+    Click the `Run` button (the green arrow) or select `Run > Run 'android'`
+    from the top menu. You may need to rebuild the project using `Build >
+    Rebuild` Project.
 
-Clone the TensorFlow examples GitHub repository to your computer to get the demo
-application.
+*   If it asks you to use Instant Run, click Proceed Without Instant Run.
 
-```
-git clone https://github.com/tensorflow/examples
-```
+*   Also, you need to have an Android device plugged in with developer options
+    enabled at this point. See
+    **[here](https://developer.android.com/studio/run/device)** for more details
+    on setting up developer devices.
 
-Open the TensorFlow source code in Android Studio. To do this, open Android
-Studio and select `Open an existing project`, setting the folder to
-`examples/lite/examples/image_classification/android`
+#### Switch between inference solutions (Task library vs TFLite Interpreter)
 
-<img src="images/classifydemo_img1.png?raw=true" />
-
-### Step 2. Build the Android Studio project
-
-Select `Build -> Make Project` and check that the project builds successfully.
-You will need Android SDK configured in the settings. You'll need at least SDK
-version 23. The `build.gradle` file will prompt you to download any missing
-libraries.
-
-#### Switch between inference solutions (Task library vs Support Library)
-
-This Image Classification Android reference app demonstrates two implementation
+This object detection Android reference app demonstrates two implementation
 solutions:
 
 (1)
-[`lib_task_api`](https://github.com/tensorflow/examples/tree/master/lite/examples/image_classification/android/lib_task_api)
+[`lib_task_api`](https://github.com/tensorflow/examples/tree/master/lite/examples/nl_classification/android/lib_task_api)
 that leverages the out-of-box API from the
-[TensorFlow Lite Task Library](https://www.tensorflow.org/lite/inference_with_metadata/task_library/image_classifier);
+[TensorFlow Lite Task Library](https://www.tensorflow.org/lite/inference_with_metadata/task_library/object_detector);
 
 (2)
-[`lib_support`](https://github.com/tensorflow/examples/tree/master/lite/examples/image_classification/android/lib_support)
+[`lib_interpreter`](https://github.com/tensorflow/examples/tree/master/lite/examples/text_classification/android/lib_interpreter)
 that creates the custom inference pipleline using the
-[TensorFlow Lite Support Library](https://www.tensorflow.org/lite/inference_with_metadata/lite_support).
+[TensorFlow Lite Interpreter Java API](https://www.tensorflow.org/lite/guide/inference#load_and_run_a_model_in_java).
 
 The [`build.gradle`](app/build.gradle) inside `app` folder shows how to change
 `flavorDimensions "tfliteInference"` to switch between the two solutions.
@@ -93,49 +77,61 @@ from the drop-down menu. See
 [configure product flavors in Android Studio](https://developer.android.com/studio/build/build-variants#product-flavors)
 for more details.
 
-For gradle CLI, running `./gradlew build` can create APKs under
-`app/build/outputs/apk` for both solutions.
+For gradle CLI, running `./gradlew build` can create APKs for both solutions
+under `app/build/outputs/apk`.
 
 *Note: If you simply want the out-of-box API to run the app, we recommend
 `lib_task_api` for inference. If you want to customize your own models and
 control the detail of inputs and outputs, it might be easier to adapt your model
-inputs and outputs by using `lib_support`.*
+inputs and outputs by using `lib_interpreter`.*
 
-The file `download.gradle` directs gradle to download the two models used in the
-example, placing them into `assets`.
+### Model used
 
-<img src="images/classifydemo_img4.png?raw=true" style="width: 40%" />
+Downloading, extraction and placing it in assets folder has been managed
+automatically by download.gradle.
 
-<img src="images/classifydemo_img2.png?raw=true" style="width: 60%" />
+If you explicitly want to download the model, you can download from
+**[here](http://storage.googleapis.com/download.tensorflow.org/models/tflite/coco_ssd_mobilenet_v1_1.0_quant_2018_06_29.zip)**.
+Extract the zip to get the .tflite and label file.
 
-<aside class="note"><b>Note:</b><p>`build.gradle` is configured to use
-TensorFlow Lite's nightly build.</p><p>If you see a build error related to
-compatibility with Tensorflow Lite's Java API (for example, `method X is
-undefined for type Interpreter`), there has likely been a backwards compatible
-change to the API. You will need to run `git pull` in the examples repo to
-obtain a version that is compatible with the nightly build.</p></aside>
+### Custom model used
 
-### Step 3. Install and run the app
+This example shows you how to perform TensorFlow Lite object detection using a
+custom model. * Clone the TensorFlow models GitHub repository to your computer.
+`git clone https://github.com/tensorflow/models/` * Build and install this
+repository. `cd models/research python3 setup.py build && python3 setup.py
+install` * Download the MobileNet SSD trained on
+**[Open Images v4](https://storage.googleapis.com/openimages/web/factsfigures_v4.html)**
+**[here](https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/tf1_detection_zoo.md)**.
+Extract the pretrained TensorFlow model files. * Go to `models/research`
+directory and execute this code to get the frozen TensorFlow Lite graph.
+`python3 object_detection/export_tflite_ssd_graph.py \ --pipeline_config_path
+object_detection/samples/configs/ssd_mobilenet_v2_oid_v4.config \
+--trained_checkpoint_prefix <directory with
+ssd_mobilenet_v2_oid_v4_2018_12_12>/model.ckpt \ --output_directory
+exported_model` * Convert the frozen graph to the TFLite model. `tflite_convert
+\ --input_shape=1,300,300,3 \ --input_arrays=normalized_input_image_tensor \
+--output_arrays=TFLite_Detection_PostProcess,TFLite_Detection_PostProcess:1,TFLite_Detection_PostProcess:2,TFLite_Detection_PostProcess:3
+\ --allow_custom_ops \ --graph_def_file=exported_model/tflite_graph.pb \
+--output_file=<directory with the TensorFlow examples
+repository>/lite/examples/object_detection/android/app/src/main/assets/detect.tflite`
+`input_shape=1,300,300,3` because the pretrained model works only with that
+input shape.
 
-Connect the Android device to the computer and be sure to approve any ADB
-permission prompts that appear on your phone. Select `Run -> Run app.` Select
-the deployment target in the connected devices to the device on which the app
-will be installed. This will install the app on the device.
+`allow_custom_ops` is necessary to allow TFLite_Detection_PostProcess operation.
 
-<img src="images/classifydemo_img5.png?raw=true" style="width: 60%" />
+`input_arrays` and `output_arrays` can be drawn from the visualized graph of the
+example detection model. `bazel run //tensorflow/lite/tools:visualize \
+"<directory with the TensorFlow examples
+repository>/lite/examples/object_detection/android/app/src/main/assets/detect.tflite"
+\ detect.html`
 
-<img src="images/classifydemo_img6.png?raw=true" style="width: 70%" />
+*   Get `labelmap.txt` from the second column of
+    **[class-descriptions-boxable](https://storage.googleapis.com/openimages/2018_04/class-descriptions-boxable.csv)**.
+*   In `DetectorActivity.java` set `TF_OD_API_IS_QUANTIZED` to `false`.
 
-<img src="images/classifydemo_img7.png?raw=true" style="width: 40%" />
+### Additional Note
 
-<img src="images/classifydemo_img8.png?raw=true" style="width: 80%" />
-
-To test the app, open the app called `TFL Classify` on your device. When you run
-the app the first time, the app will request permission to access the camera.
-Re-installing the app may require you to uninstall the previous installations.
-
-## Assets folder
-
-_Do not delete the assets folder content_. If you explicitly deleted the files,
-choose `Build -> Rebuild` to re-download the deleted model files into the assets
-folder.
+_Please do not delete the assets folder content_. If you explicitly deleted the
+files, then please choose *Build*->*Rebuild* from menu to re-download the
+deleted model files into assets folder.

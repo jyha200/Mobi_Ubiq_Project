@@ -1,0 +1,15 @@
+machine
+handwash
+nowater
+bleach_O
+bleach_X
+dryer_O
+dryer_X
+wring_O
+wring_X
+sun
+shade
+iron_O
+iron_X
+dryclean_O
+dryclean_X
