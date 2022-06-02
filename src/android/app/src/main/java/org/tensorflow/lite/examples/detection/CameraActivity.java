@@ -17,8 +17,10 @@
 package org.tensorflow.lite.examples.detection;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.hardware.Camera;
 import android.hardware.camera2.CameraAccessException;
@@ -49,7 +51,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.Button;
 import androidx.annotation.NonNull;
-import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -82,7 +83,6 @@ public abstract class CameraActivity extends AppCompatActivity
 
   private LinearLayout bottomSheetLayout;
   private LinearLayout gestureLayout;
-  private BottomSheetBehavior<LinearLayout> sheetBehavior;
 
   protected TextView[] guideTextView = new TextView[6];
   protected ImageView bottomSheetArrowImageView;
@@ -90,6 +90,8 @@ public abstract class CameraActivity extends AppCompatActivity
   private SwitchCompat apiSwitchCompat;
   //private TextView threadsTextView;
   private Button captureButton;
+  private Button menuButton;
+  private Button takeButton;
 
   @Override
   protected void onCreate(final Bundle savedInstanceState) {
@@ -111,75 +113,33 @@ public abstract class CameraActivity extends AppCompatActivity
 //    threadsTextView = findViewById(R.id.threads);
 //    plusImageView = findViewById(R.id.plus);
 //    minusImageView = findViewById(R.id.minus);
-    apiSwitchCompat = findViewById(R.id.api_info_switch);
-    bottomSheetLayout = findViewById(R.id.bottom_sheet_layout);
+    apiSwitchCompat = findViewById(R.id.api_info_switch);;
     gestureLayout = findViewById(R.id.gesture_layout);
-    sheetBehavior = BottomSheetBehavior.from(bottomSheetLayout);
-    bottomSheetArrowImageView = findViewById(R.id.bottom_sheet_arrow);
 
-    ViewTreeObserver vto = gestureLayout.getViewTreeObserver();
-    vto.addOnGlobalLayoutListener(
-        new ViewTreeObserver.OnGlobalLayoutListener() {
-          @Override
-          public void onGlobalLayout() {
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
-              gestureLayout.getViewTreeObserver().removeGlobalOnLayoutListener(this);
-            } else {
-              gestureLayout.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-            }
-            //                int width = bottomSheetLayout.getMeasuredWidth();
-            int height = gestureLayout.getMeasuredHeight();
 
-            sheetBehavior.setPeekHeight(height);
-          }
-        });
-    sheetBehavior.setHideable(false);
 
-    sheetBehavior.setBottomSheetCallback(
-        new BottomSheetBehavior.BottomSheetCallback() {
-          @Override
-          public void onStateChanged(@NonNull View bottomSheet, int newState) {
-            switch (newState) {
-              case BottomSheetBehavior.STATE_HIDDEN:
-                break;
-              case BottomSheetBehavior.STATE_EXPANDED:
-                {
-                  bottomSheetArrowImageView.setImageResource(R.drawable.icn_chevron_down);
-                }
-                break;
-              case BottomSheetBehavior.STATE_COLLAPSED:
-                {
-                  bottomSheetArrowImageView.setImageResource(R.drawable.icn_chevron_up);
-                }
-                break;
-              case BottomSheetBehavior.STATE_DRAGGING:
-                break;
-              case BottomSheetBehavior.STATE_SETTLING:
-                bottomSheetArrowImageView.setImageResource(R.drawable.icn_chevron_up);
-                break;
-            }
-          }
-
-          @Override
-          public void onSlide(@NonNull View bottomSheet, float slideOffset) {}
-        });
-
-    guideTextView[0] = findViewById(R.id.guide_1_text);
-    guideTextView[1] = findViewById(R.id.guide_2_text);
-    guideTextView[2] = findViewById(R.id.guide_3_text);
-    guideTextView[3] = findViewById(R.id.guide_4_text);
-    guideTextView[4] = findViewById(R.id.guide_5_text);
-    guideTextView[5] = findViewById(R.id.guide_6_text);
-
-    apiSwitchCompat.setOnCheckedChangeListener(this);
-    captureButton = findViewById(R.id.pause);
-    captureButton.setOnClickListener(new Button.OnClickListener() {
+    menuButton = findViewById(R.id.menu_button1);
+    menuButton.setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View view) {
-        toggleStopped();
+        Intent intent = new Intent(getApplicationContext(), MenuActivity.class);
+        startActivity(intent);
       }
     });
 
+    takeButton = findViewById(R.id.take_button);
+    takeButton.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View view) {
+        // get TextView's Text.
+        AlertDialog.Builder builder = new AlertDialog.Builder(CameraActivity.this);
+        builder.setTitle("Take Picture");
+        builder.setMessage("Take Picture" + " message");
+        builder.setNeutralButton("Confirm", null);
+        builder.create().show();
+
+      }
+    });
     //plusImageView.setOnClickListener(this);
     //minusImageView.setOnClickListener(this);
   }
@@ -552,7 +512,6 @@ public abstract class CameraActivity extends AppCompatActivity
   }
 
   protected void showGuide(int idx, String guideString) {
-    guideTextView[idx - 1].setText(guideString);
   }
 
   protected abstract void processImage();
