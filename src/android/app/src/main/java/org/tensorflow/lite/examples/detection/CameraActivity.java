@@ -136,6 +136,9 @@ public abstract class CameraActivity extends AppCompatActivity
       @Override
       public void onClick(View view) {
         Intent intent = new Intent(getApplicationContext(), PictureActivity.class);
+        SerializableImage image = getImage();
+
+        intent.putExtra("image_", image);
         startActivity(intent);
       }
     });
@@ -143,6 +146,9 @@ public abstract class CameraActivity extends AppCompatActivity
     //minusImageView.setOnClickListener(this);
   }
 
+  SerializableImage getImage() {
+    return new SerializableImage();
+  }
   protected int[] getRgbBytes() {
     imageConverter.run();
     return rgbBytes;

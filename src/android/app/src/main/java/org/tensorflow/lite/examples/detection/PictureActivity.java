@@ -3,7 +3,9 @@ package org.tensorflow.lite.examples.detection;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Camera;
+import android.media.Image;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,6 +25,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import org.tensorflow.lite.examples.detection.env.Logger;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -123,7 +126,8 @@ public class PictureActivity extends AppCompatActivity {
     setContentView(R.layout.tfe_od_activity_picture);
     ImageView imageView = findViewById(R.id.picture_image_view);
     imageView.setImageResource(R.drawable.sample_image);
-    List<String> labels = getLabels();
+    SerializableImage image = (SerializableImage)getIntent().getSerializableExtra("image_");
+    List<String> labels = getLabels(image.image);
     AlertDialog.Builder builder = new AlertDialog.Builder(PictureActivity.this);
     builder.setTitle("Confirm Recognized Labels");
 
@@ -155,10 +159,8 @@ public class PictureActivity extends AppCompatActivity {
     builder.create().show();
   }
 
-  List<String> getLabels() {
+  List<String> getLabels(Image image) {
     List<String> ret = new ArrayList<>();
-    ret.add("machine");
-    ret.add("bleach_O");
     return ret;
   }
 }
