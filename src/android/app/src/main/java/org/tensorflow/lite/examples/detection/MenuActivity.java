@@ -8,6 +8,7 @@ import android.os.Bundle;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.AdapterView;
@@ -18,16 +19,19 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.logging.Logger;
 
-import org.tensorflow.lite.examples.detection.env.Logger;
+//import org.tensorflow.lite.examples.detection.env.Logger;
 
 public class MenuActivity extends AppCompatActivity {
   private Button returnButton;
+  private LabelRowHandler dbHandler;
 
-  private static final Logger LOGGER = new Logger();
+//  private static final Logger LOGGER = new Logger();
   static public HashMap<String, String> reference_guide = new HashMap<String, String>(){
     {
       put("machine", "Can use washing machine");
+      put("handwash", "Can only do hand wash");
       put("nowater", "Do not wash with water");
       put("bleach_O", "Can use bleach");
       put("bleach_X", "Do not use bleach");
@@ -48,6 +52,18 @@ public class MenuActivity extends AppCompatActivity {
   protected void onCreate(@Nullable Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.tfe_od_activity_menu);
+
+    //db create and insert testing data
+    dbHandler = new LabelRowHandler(MenuActivity.this);
+
+    String[] arrTemp = {"machine", "dryer_O"};
+    String[] arrTemp2 = {"nowater", "dryer_O", "wring_X"};
+    String[] arrTemp3 = {"handwash", "shade"};
+
+    dbHandler.addNewUserDataLabelRow("pink T-shirt", arrTemp);
+    dbHandler.addNewUserDataLabelRow("black jean", arrTemp2);
+    dbHandler.addNewUserDataLabelRow("baseball jumper", arrTemp3);
+
     String[] LIST_MENU = getClothIdxs();
 
     ArrayAdapter adapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, LIST_MENU);
@@ -83,12 +99,20 @@ public class MenuActivity extends AppCompatActivity {
   }
 
   String[] getClothIdxs() {
-    String[] ret = {"pink T-shirt", "black jean", "baseball jumper"};
-    return ret;
+    List clothesList;
+    clothesList = dbHandler.getUserDataClothes();
+    return (String[]) clothesList.toArray(new String[clothesList.size()]);
+
+//    String[] ret = {"pink T-shirt", "black jean", "baseball jumper"};
+//    return ret;
   }
 
   String[] getCareLabels(String cloth_idx) {
-    String[] ret = {"machine", "bleach_O", "dryer_X", "wring_O","sun","iron_X"} ;
-    return ret;
+    List labelList;
+    labelList = dbHandler.getUserDataLabelRow(cloth_idx);
+    return (String[]) labelList.toArray(new String[labelList.size()]);
+
+//    String[] ret = {"machine", "bleach_O", "dryer_X", "wring_O","sun","iron_X"} ;
+//    return ret;
   }
 }
