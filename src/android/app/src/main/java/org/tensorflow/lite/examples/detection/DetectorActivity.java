@@ -89,26 +89,6 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
   private BorderedText borderedText;
 
-  private HashMap<String, String> reference_guide = new HashMap<String, String>(){
-    {
-      put("machine", "Can use washing machine");
-      put("handwash", "Can only do hand wash");
-      put("nowater", "Do not wash with water");
-      put("bleach_O", "Can use bleach");
-      put("bleach_X", "Do not use bleach");
-      put("dryer_O", "Can use dry machine");
-      put("dryer_X", "Do not use dry machine");
-      put("wring_O", "Wring gently by hand");
-      put("wring_X", "Do not wring");
-      put("sun", "Dry under sunlight");
-      put("shade", "Dry under shade");
-      put("iron_O", "Can iron");
-      put("iron_X", "Do not iron");
-      put("dryclean_O", "Dry clean");
-      put("dryclean_X", "No dry clean");
-    }
-  };
-
   @Override
   public void onPreviewSizeChosen(final Size size, final int rotation) {
     final float textSizePx =
@@ -242,7 +222,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
                   }
                   if (do_not_show == false) {
                     if (i < 6) {
-                      guide[i] = reference_guide.get(title);
+                      guide[i] = PictureActivity.reference_guide.get(title);
                       shown_idx[i] = title;
                       i++;
                     }

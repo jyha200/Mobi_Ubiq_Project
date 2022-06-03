@@ -28,25 +28,6 @@ public class MenuActivity extends AppCompatActivity {
   private LabelRowHandler dbHandler;
 
 //  private static final Logger LOGGER = new Logger();
-  static public HashMap<String, String> reference_guide = new HashMap<String, String>(){
-    {
-      put("machine", "Can use washing machine");
-      put("handwash", "Can only do hand wash");
-      put("nowater", "Do not wash with water");
-      put("bleach_O", "Can use bleach");
-      put("bleach_X", "Do not use bleach");
-      put("dryer_O", "Can use dry machine");
-      put("dryer_X", "Do not use dry mach");
-      put("wring_O", "Wring gently by han");
-      put("wring_X", "Do not wring");
-      put("sun", "Dry under sunlight");
-      put("shade", "Dry under shade");
-      put("iron_O", "Can iron");
-      put("iron_X", "Do not iron");
-      put("dryclean_O", "Dry clean");
-      put("dryclean_X", "No dry clean");
-    }
-  };
 
   @Override
   protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -80,7 +61,7 @@ public class MenuActivity extends AppCompatActivity {
         String[] labels = getCareLabels(strText);
         List<String> msg_list = new ArrayList<>();
         for (int i = 0 ; i < labels.length ; i++) {
-          String guide = MenuActivity.reference_guide.get(labels[i]);
+          String guide = PictureActivity.reference_guide.get(labels[i]);
           msg_list.add(guide);
         }
 
