@@ -131,13 +131,8 @@ public abstract class CameraActivity extends AppCompatActivity
     takeButton.setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View view) {
-        // get TextView's Text.
-        AlertDialog.Builder builder = new AlertDialog.Builder(CameraActivity.this);
-        builder.setTitle("Take Picture");
-        builder.setMessage("Take Picture" + " message");
-        builder.setNeutralButton("Confirm", null);
-        builder.create().show();
-
+        Intent intent = new Intent(getApplicationContext(), PictureActivity.class);
+        startActivity(intent);
       }
     });
     //plusImageView.setOnClickListener(this);
