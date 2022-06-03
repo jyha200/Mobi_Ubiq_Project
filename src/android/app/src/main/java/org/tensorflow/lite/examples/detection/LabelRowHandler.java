@@ -55,11 +55,6 @@ public class LabelRowHandler extends SQLiteOpenHelper{
     private static final String DESC_COL13 = "iron_X";
     private static final String DESC_COL14 = "dryclean_O";
     private static final String DESC_COL15 = "dryclean_X";
-//    private static final String DESC_COL1 = "type";
-//    private static final String DESC_COL2 = "description";
-
-//    private static final String TYPE_COL = "type";
-//    private static final String DESC_COL = "description";
 
 
     public LabelRowHandler(Context context) {
@@ -88,12 +83,6 @@ public class LabelRowHandler extends SQLiteOpenHelper{
                 + DESC_COL14 + " INT,"
                 + DESC_COL15 + " INT);";
 
-
-//        String query = "CREATE TABLE " + TABLE_NAME + " ("
-//                + ID_COL + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-//                + TYPE_COL + " TEXT,"
-//                + DESC_COL + " TEXT)";
-
         db.execSQL(query);
 
     }
@@ -109,12 +98,6 @@ public class LabelRowHandler extends SQLiteOpenHelper{
 
         List<Integer> inputLabelList = new ArrayList<>();
 
-//        for(int i = 0; i < labelArray.length; i++) {
-//            inputLabelList.add( labelIndex.get(labelArray[i]) );
-//        }
-
-        // on below line we are passing all values
-        // along with its key and value pair.
         values.put(CLOTH_COL, "cl");
 
         for(int i = 0; i < labelArray.length; i++) {
@@ -123,16 +106,12 @@ public class LabelRowHandler extends SQLiteOpenHelper{
 
         db.insert(TABLE_NAME, null, values);
 
-        // at last we are closing our
-        // database after adding database.
         db.close();
     }
 
-    //    public List<Integer> getUserDataLabelRow(String userCloth) {
     public List<String> getUserDataLabelRow(String userCloth) {
 
-        List<Integer> labelList = new ArrayList<>();
-        List<String> labelList2 = new ArrayList<>();
+        List<String> labelList = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_NAME + " WHERE " + CLOTH_COL + "= '" + userCloth + "';", null);
         if (cursor != null) {
@@ -141,30 +120,32 @@ public class LabelRowHandler extends SQLiteOpenHelper{
 
         int columnExists;
 
-//        for(int i = 0; i < 15; i++) {
-//            labelList.add(cursor.getInt(i+2));
-//        }
-
         for(int i = 0; i < 15; i++) {
             columnExists = cursor.getInt(i+2);
             if (columnExists > 0) {
-                labelList2.add(labelIndex.get(i+2));
+                labelList.add(labelIndex.get(i+2));
             }
         }
 
-//        labelList.add(cursor.getInt(1));
+        return labelList;
 
+    }
 
-//        for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
-//            for(int i = 0; i < 15; i++) {
-//                labelList.add(cursor.getInt(i+1));
-//            }
-//            // do what you need with the cursor here
-//        }
-//        Log.d("d", "fdjskfljsdklfjdkslfjkds");
+    public List<String> getClothes() {
 
-//        return labelList;
-        return labelList2;
+        List<String> clothesList = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT "+ CLOTH_COL + " FROM " + TABLE_NAME + "';", null);
+        if (cursor != null) {
+            cursor.moveToFirst();
+        }
+
+        for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
+            clothesList.add(cursor.getString(1));
+            // do what you need with the cursor here
+        }
+
+        return clothesList;
 
     }
 
