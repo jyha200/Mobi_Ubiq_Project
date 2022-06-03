@@ -33,16 +33,6 @@ public class MenuActivity extends AppCompatActivity {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.tfe_od_activity_menu);
 
-    //db create and insert testing data
-
-    String[] arrTemp = {"machine", "dryer_O"};
-    String[] arrTemp2 = {"nowater", "dryer_O", "wring_X"};
-    String[] arrTemp3 = {"handwash", "shade"};
-
-    CameraActivity.dbHandler.addNewUserDataLabelRow("pink T-shirt", arrTemp);
-    CameraActivity.dbHandler.addNewUserDataLabelRow("black jean", arrTemp2);
-    CameraActivity.dbHandler.addNewUserDataLabelRow("baseball jumper", arrTemp3);
-
     String[] LIST_MENU = getClothIdxs();
 
     ArrayAdapter adapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, LIST_MENU);
