@@ -103,13 +103,17 @@ public class PictureActivity extends AppCompatActivity {
     ImageView imageView = findViewById(R.id.picture_image_view);
     imageView.setImageResource(R.drawable.sample_image);
     List<String> labels = getLabels();
-
     AlertDialog.Builder builder = new AlertDialog.Builder(PictureActivity.this);
     builder.setTitle("Confirm Recognized Labels");
-    LegendListAdapter adapter = new LegendListAdapter(PictureActivity.this, R.layout.tfe_od_select_legend_item, labels);
-    builder.setAdapter(adapter, null);
-    builder.setPositiveButton("Confirm", null);
-    builder.setNegativeButton("Cancel", null);
+    if (labels.size() > 0) {
+      LegendListAdapter adapter = new LegendListAdapter(PictureActivity.this, R.layout.tfe_od_select_legend_item, labels);
+      builder.setAdapter(adapter, null);
+      builder.setPositiveButton("Confirm", null);
+      builder.setNegativeButton("Cancel", null);
+    } else {
+      builder.setMessage("No label recognized");
+      builder.setNeutralButton("OK", null);
+    }
     builder.create().show();
   }
 
