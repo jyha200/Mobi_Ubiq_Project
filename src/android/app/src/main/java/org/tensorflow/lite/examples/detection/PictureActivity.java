@@ -11,6 +11,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckedTextView;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -105,10 +106,26 @@ public class PictureActivity extends AppCompatActivity {
     List<String> labels = getLabels();
     AlertDialog.Builder builder = new AlertDialog.Builder(PictureActivity.this);
     builder.setTitle("Confirm Recognized Labels");
+
     if (labels.size() > 0) {
       LegendListAdapter adapter = new LegendListAdapter(PictureActivity.this, R.layout.tfe_od_select_legend_item, labels);
       builder.setAdapter(adapter, null);
-      builder.setPositiveButton("Confirm", null);
+      builder.setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
+        @Override
+        public void onClick(DialogInterface dialog, int id) {
+          AlertDialog.Builder builder = new AlertDialog.Builder(PictureActivity.this);
+          builder.setTitle("Insert name of this cloth");
+          EditText input = new EditText(PictureActivity.this);
+          builder.setView(input);
+          builder.setPositiveButton("Done", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int id) {
+              String value = input.getText().toString();
+            }
+          });
+          builder.create().show();
+        }
+      });
       builder.setNegativeButton("Cancel", null);
     } else {
       builder.setMessage("No label recognized");
