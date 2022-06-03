@@ -92,6 +92,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
   private HashMap<String, String> reference_guide = new HashMap<String, String>(){
     {
       put("machine", "Can use washing machine");
+      put("handwash", "Can only do hand wash");
       put("nowater", "Do not wash with water");
       put("bleach_O", "Can use bleach");
       put("bleach_X", "Do not use bleach");

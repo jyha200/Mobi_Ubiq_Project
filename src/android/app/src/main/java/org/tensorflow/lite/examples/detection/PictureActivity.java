@@ -33,6 +33,7 @@ public class PictureActivity extends AppCompatActivity {
   static public HashMap<String, String> reference_guide = new HashMap<String, String>(){
     {
       put("machine", "Can use washing machine");
+      put("handwash", "Can only do hand wash");
       put("nowater", "Do not wash with water");
       put("bleach_O", "Can use bleach");
       put("bleach_X", "Do not use bleach");
@@ -51,6 +52,7 @@ public class PictureActivity extends AppCompatActivity {
   static public HashMap<String, Integer> reference_images = new HashMap<String, Integer>(){
     {
       put("machine", R.drawable.machine);
+      put("handwash", R.drawable.handwash);
       put("nowater", R.drawable.nowater);
       put("bleach_O", R.drawable.bleach_o);
       put("bleach_X", R.drawable.bleach_x);
