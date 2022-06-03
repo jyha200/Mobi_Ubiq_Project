@@ -93,11 +93,15 @@ public abstract class CameraActivity extends AppCompatActivity
   private Button menuButton;
   private Button takeButton;
 
+  public static LabelRowHandler dbHandler;
+
   @Override
   protected void onCreate(final Bundle savedInstanceState) {
     LOGGER.d("onCreate " + this);
     super.onCreate(null);
     getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
+    dbHandler = new LabelRowHandler(CameraActivity.this);
 
     setContentView(R.layout.tfe_od_activity_camera);
     Toolbar toolbar = findViewById(R.id.toolbar);

@@ -25,7 +25,6 @@ import java.util.logging.Logger;
 
 public class MenuActivity extends AppCompatActivity {
   private Button returnButton;
-  private LabelRowHandler dbHandler;
 
 //  private static final Logger LOGGER = new Logger();
 
@@ -35,15 +34,14 @@ public class MenuActivity extends AppCompatActivity {
     setContentView(R.layout.tfe_od_activity_menu);
 
     //db create and insert testing data
-    dbHandler = new LabelRowHandler(MenuActivity.this);
 
     String[] arrTemp = {"machine", "dryer_O"};
     String[] arrTemp2 = {"nowater", "dryer_O", "wring_X"};
     String[] arrTemp3 = {"handwash", "shade"};
 
-    dbHandler.addNewUserDataLabelRow("pink T-shirt", arrTemp);
-    dbHandler.addNewUserDataLabelRow("black jean", arrTemp2);
-    dbHandler.addNewUserDataLabelRow("baseball jumper", arrTemp3);
+    CameraActivity.dbHandler.addNewUserDataLabelRow("pink T-shirt", arrTemp);
+    CameraActivity.dbHandler.addNewUserDataLabelRow("black jean", arrTemp2);
+    CameraActivity.dbHandler.addNewUserDataLabelRow("baseball jumper", arrTemp3);
 
     String[] LIST_MENU = getClothIdxs();
 
@@ -81,7 +79,7 @@ public class MenuActivity extends AppCompatActivity {
 
   String[] getClothIdxs() {
     List clothesList;
-    clothesList = dbHandler.getUserDataClothes();
+    clothesList = CameraActivity.dbHandler.getUserDataClothes();
     return (String[]) clothesList.toArray(new String[clothesList.size()]);
 
 //    String[] ret = {"pink T-shirt", "black jean", "baseball jumper"};
@@ -90,7 +88,7 @@ public class MenuActivity extends AppCompatActivity {
 
   String[] getCareLabels(String cloth_idx) {
     List labelList;
-    labelList = dbHandler.getUserDataLabelRow(cloth_idx);
+    labelList = CameraActivity.dbHandler.getUserDataLabelRow(cloth_idx);
     return (String[]) labelList.toArray(new String[labelList.size()]);
 
 //    String[] ret = {"machine", "bleach_O", "dryer_X", "wring_O","sun","iron_X"} ;
