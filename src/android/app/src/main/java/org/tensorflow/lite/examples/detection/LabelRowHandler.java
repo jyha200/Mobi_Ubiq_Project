@@ -66,7 +66,7 @@ public class LabelRowHandler extends SQLiteOpenHelper{
 
         String query = "CREATE TABLE IF NOT EXISTS " + TABLE_NAME + " ("
                 + ID_COL + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-                + CLOTH_COL + " INT,"
+                + CLOTH_COL + " TEXT,"
                 + DESC_COL1 + " INT,"
                 + DESC_COL2 + " INT,"
                 + DESC_COL3 + " INT,"
@@ -98,7 +98,7 @@ public class LabelRowHandler extends SQLiteOpenHelper{
 
         List<Integer> inputLabelList = new ArrayList<>();
 
-        values.put(CLOTH_COL, "cl");
+        values.put(CLOTH_COL, userCloth);
 
         for(int i = 0; i < labelArray.length; i++) {
             values.put(labelArray[i], 31);
@@ -142,7 +142,6 @@ public class LabelRowHandler extends SQLiteOpenHelper{
 
         for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
             clothesList.add(cursor.getString(1));
-            // do what you need with the cursor here
         }
 
         return clothesList;
