@@ -1,7 +1,7 @@
-package com.example.helloworld;
+package org.tensorflow.lite.examples.detection;
 
-import android.content.ContentValues;
 import android.content.Context;
+import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -85,6 +85,15 @@ public class LabelRowHandler extends SQLiteOpenHelper{
 
         db.execSQL(query);
 
+
+        String[] arrTemp = {"machine", "dryer_O"};
+        String[] arrTemp2 = {"nowater", "dryer_O", "wring_X"};
+        String[] arrTemp3 = {"handwash", "shade"};
+
+        addNewUserDataLabelRow("pink T-shirt", arrTemp);
+        addNewUserDataLabelRow("black jean", arrTemp2);
+        addNewUserDataLabelRow("baseball jumper", arrTemp3);
+
     }
 
     public void addNewUserDataLabelRow(String userCloth, String[] labelArray) {
@@ -159,7 +168,7 @@ public class LabelRowHandler extends SQLiteOpenHelper{
 // private Button button1; // inserting clothes and labels
 // private Button button2; // getting labels by giving cloths type
 // private Button button3; // getting all clothes from db
-// private DBHandler dbHandler;
+// private LabelRowHandler dbHandler;
 
 // button1 = findViewById(R.id.helloworld_button);
 // button2 = findViewById(R.id.button2);
