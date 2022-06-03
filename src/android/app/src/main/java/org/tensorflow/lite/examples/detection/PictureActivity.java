@@ -48,6 +48,24 @@ public class PictureActivity extends AppCompatActivity {
       put("dryclean_X", "No dry clean");
     }
   };
+  static public HashMap<String, Integer> reference_images = new HashMap<String, Integer>(){
+    {
+      put("machine", R.drawable.machine);
+      put("nowater", R.drawable.nowater);
+      put("bleach_O", R.drawable.bleach_o);
+      put("bleach_X", R.drawable.bleach_x);
+      put("dryer_O", R.drawable.dryer_o);
+      put("dryer_X", R.drawable.dryer_x);
+      put("wring_O", R.drawable.wring_o);
+      put("wring_X", R.drawable.wring_x);
+      put("sun", R.drawable.sun);
+      put("shade", R.drawable.shade);
+      put("iron_O", R.drawable.iron_o);
+      put("iron_X", R.drawable.iron_x);
+      put("dryclean_O", R.drawable.dryclean_o);
+      put("dryclean_X", R.drawable.dryclean_x);
+    }
+  };
   protected class LegendListAdapter extends ArrayAdapter<String> {
     private Context context;
     private ViewHolder holder;
@@ -85,8 +103,7 @@ public class PictureActivity extends AppCompatActivity {
 
       if(position<guides.length) {
         // 표시값 세팅
-        holder.icon.setImageDrawable(getResources().getDrawable(R.drawable.sample_image));
-
+        holder.icon.setImageDrawable(getResources().getDrawable(reference_images.get(guides[position])));
         holder.title.setText(reference_guide.get(guides[position]));
       }
 

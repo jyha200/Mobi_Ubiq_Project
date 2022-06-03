@@ -96,8 +96,8 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
       put("bleach_O", "Can use bleach");
       put("bleach_X", "Do not use bleach");
       put("dryer_O", "Can use dry machine");
-      put("dryer_X", "Do not use dry mach");
-      put("wring_O", "Wring gently by han");
+      put("dryer_X", "Do not use dry machine");
+      put("wring_O", "Wring gently by hand");
       put("wring_X", "Do not wring");
       put("sun", "Dry under sunlight");
       put("shade", "Dry under shade");
