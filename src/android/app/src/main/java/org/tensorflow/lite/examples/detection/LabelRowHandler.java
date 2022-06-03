@@ -96,8 +96,6 @@ public class LabelRowHandler extends SQLiteOpenHelper{
         String deleteQuery = "DELETE FROM " + TABLE_NAME + " WHERE " + CLOTH_COL + "= '" + userCloth + "';";
         db.execSQL(deleteQuery); // testing purpose
 
-        List<Integer> inputLabelList = new ArrayList<>();
-
         values.put(CLOTH_COL, userCloth);
 
         for(int i = 0; i < labelArray.length; i++) {
@@ -131,17 +129,18 @@ public class LabelRowHandler extends SQLiteOpenHelper{
 
     }
 
-    public List<String> getClothes() {
+    public List<String> getUserDataClothes() {
 
         List<String> clothesList = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT "+ CLOTH_COL + " FROM " + TABLE_NAME + "';", null);
+        Cursor cursor = db.rawQuery("SELECT " + CLOTH_COL + " FROM " + TABLE_NAME + ";", null);
+
         if (cursor != null) {
             cursor.moveToFirst();
         }
 
         for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
-            clothesList.add(cursor.getString(1));
+            clothesList.add(cursor.getString(0)); // index 0 because only getting userClothType
         }
 
         return clothesList;
@@ -157,8 +156,9 @@ public class LabelRowHandler extends SQLiteOpenHelper{
 
 }
 
-// private Button button1;
-// private Button button2;
+// private Button button1; // inserting clothes and labels
+// private Button button2; // getting labels by giving cloths type
+// private Button button3; // getting all clothes from db
 // private DBHandler dbHandler;
 
 // button1 = findViewById(R.id.helloworld_button);
@@ -201,3 +201,18 @@ public class LabelRowHandler extends SQLiteOpenHelper{
 //         Toast.makeText(MainActivity.this, result, Toast.LENGTH_SHORT).show();
 //     }
 // });
+
+
+//button3.setOnClickListener(new View.OnClickListener() {
+//    @Override
+//    public void onClick(View v) {
+//        List temp;
+//        temp = dbHandler.getUserDataClothes();
+//
+//        String result = TextUtils.join(",", temp);
+//
+//        // after adding the data we are displaying a toast message.
+//
+//        Toast.makeText(MainActivity.this, result, Toast.LENGTH_SHORT).show();
+//    }
+//});
