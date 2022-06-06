@@ -16,6 +16,8 @@
 
 package org.tensorflow.lite.examples.detection;
 
+import static android.os.Environment.getExternalStoragePublicDirectory;
+
 import android.Manifest;
 import android.app.AlertDialog;
 import android.app.Fragment;
@@ -31,14 +33,19 @@ import android.media.Image;
 import android.media.Image.Plane;
 import android.media.ImageReader;
 import android.media.ImageReader.OnImageAvailableListener;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Trace;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.appcompat.widget.Toolbar;
+
+import android.provider.MediaStore;
+import android.util.Log;
 import android.util.Size;
 import android.view.Surface;
 import android.view.View;
@@ -51,7 +58,13 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.Button;
 import androidx.annotation.NonNull;
+import androidx.core.content.FileProvider;
+
+import java.io.File;
+import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -95,6 +108,11 @@ public abstract class CameraActivity extends AppCompatActivity
 
   public static LabelRowHandler dbHandler;
 
+  private static final int REQUEST_IMAGE_CODE = 101;
+  private File photoFile;
+  private static final int REQUEST_TAKE_PHOTO = 200;
+  Uri photoURI;
+
   @Override
   protected void onCreate(final Bundle savedInstanceState) {
     LOGGER.d("onCreate " + this);
@@ -132,16 +150,73 @@ public abstract class CameraActivity extends AppCompatActivity
     });
 
     takeButton = findViewById(R.id.take_button);
+
     takeButton.setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View view) {
-        Intent intent = new Intent(getApplicationContext(), PictureActivity.class);
-        startActivity(intent);
+        //Intent intent = new Intent(getApplicationContext(), PictureActivity.class);
+        //startActivity(intent);
+        takePicture();
       }
     });
     //plusImageView.setOnClickListener(this);
     //minusImageView.setOnClickListener(this);
   }
+
+  public void takePicture(){
+    Intent imageTakeIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+    if (imageTakeIntent.resolveActivity(getPackageManager()) != null) {
+      startActivityForResult(imageTakeIntent, REQUEST_IMAGE_CODE);
+      // 사진을 저장할 파일 생성
+      photoFile = null;
+      try {
+        photoFile = createImageFile();
+      } catch (IOException ex) {
+        ex.printStackTrace();
+      }
+      // 파일을 정상 생성하였을 경우
+      if (photoFile != null) {
+        photoURI = FileProvider.getUriForFile(this,
+                "ubiq.mobile.fileprovider",    // 다른 앱에서 내 앱의 파일을 접근하기 위한 권한명 지정
+                photoFile);
+
+        imageTakeIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+
+        // image transfer from CameraActivity to DetectorActivity
+        Intent intent = new Intent(CameraActivity.this, DetectorActivity.class);
+        intent.putExtra("img", photoFile); //Maybe not File, URI?!
+        intent.putExtra("photoFile", photoURI);
+        //startActivityForResult(imageTakeIntent, REQUEST_TAKE_PHOTO);
+      }
+    }
+  }
+  String imageFileName;
+  private String mCurrentPhotoPath;
+  static final String TAG = "MainActivity";
+
+  private File createImageFile() throws IOException {
+    // Create an image file name
+    String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+    Log.d("timeStamp", timeStamp);
+    imageFileName = "JPEG_" + timeStamp + "_";
+    File storageDir = getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);  // TODO: 외부저장소의 공용폴더에 저장할 때 사용할 것
+    Log.d("imageFileName", imageFileName);
+
+    //File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+    Log.d("storageDir", storageDir.toString());
+    File image = File.createTempFile(
+            imageFileName,  /* prefix */
+            ".jpg",         /* suffix */
+            storageDir      /* directory */
+    );
+    Log.d("image", image.toString());
+
+    // Save a file: path for use with ACTION_VIEW intents
+    mCurrentPhotoPath = image.getAbsolutePath();
+    Log.i(TAG, "Created file path: " + mCurrentPhotoPath);
+    return image;
+  }
+
 
   protected int[] getRgbBytes() {
     imageConverter.run();

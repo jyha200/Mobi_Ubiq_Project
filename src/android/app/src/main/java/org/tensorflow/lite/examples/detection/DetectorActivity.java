@@ -16,6 +16,7 @@
 
 package org.tensorflow.lite.examples.detection;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.graphics.Canvas;
@@ -26,10 +27,13 @@ import android.graphics.Paint.Style;
 import android.graphics.RectF;
 import android.graphics.Typeface;
 import android.media.ImageReader.OnImageAvailableListener;
+import android.net.Uri;
 import android.os.SystemClock;
 import android.util.Size;
 import android.util.TypedValue;
 import android.widget.Toast;
+
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -88,6 +92,9 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
   private MultiBoxTracker tracker;
 
   private BorderedText borderedText;
+
+  private File label_image;
+  Uri label_uri;
 
   @Override
   public void onPreviewSizeChosen(final Size size, final int rotation) {
@@ -154,8 +161,17 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     tracker.setFrameConfiguration(previewWidth, previewHeight, sensorOrientation);
   }
 
+
+
   @Override
   protected void processImage() {
+
+    //getting image from CameraActivity
+    Intent intent = getIntent();
+    label_image = (File) intent.getSerializableExtra("img");
+    label_uri = (Uri) intent.getSerializableExtra("photoFile");
+
+
     ++timestamp;
     final long currTimestamp = timestamp;
     trackingOverlay.postInvalidate();
