@@ -16,12 +16,18 @@
 
 package org.tensorflow.lite.examples.detection;
 
+import static android.os.Environment.getExternalStoragePublicDirectory;
+
 import android.Manifest;
 import android.app.AlertDialog;
 import android.app.Fragment;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.ImageDecoder;
 import android.hardware.Camera;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCharacteristics;
@@ -31,14 +37,19 @@ import android.media.Image;
 import android.media.Image.Plane;
 import android.media.ImageReader;
 import android.media.ImageReader.OnImageAvailableListener;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Trace;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.appcompat.widget.Toolbar;
+
+import android.provider.MediaStore;
+import android.util.Log;
 import android.util.Size;
 import android.view.Surface;
 import android.view.View;
@@ -51,7 +62,13 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.Button;
 import androidx.annotation.NonNull;
+import androidx.core.content.FileProvider;
+
+import java.io.File;
+import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -68,6 +85,7 @@ public abstract class CameraActivity extends AppCompatActivity
   private static final int PERMISSIONS_REQUEST = 1;
 
   private static final String PERMISSION_CAMERA = Manifest.permission.CAMERA;
+  //private static final String PERMISSION_STORAGE = Manifest.permission.STORAGE;
   protected int previewWidth = 0;
   protected int previewHeight = 0;
   private boolean debug = false;
@@ -95,6 +113,15 @@ public abstract class CameraActivity extends AppCompatActivity
 
   public static LabelRowHandler dbHandler;
 
+  private static final int REQUEST_IMAGE_CODE = 101;
+  private File photoFile;
+  private static final int REQUEST_TAKE_PHOTO = 200;
+  Uri photoURI;
+
+  Bitmap rgbFrameBitmap = null;
+  Bitmap croppedBitmap = null;
+  Bitmap cropCopyBitmap = null;
+
   @Override
   protected void onCreate(final Bundle savedInstanceState) {
     LOGGER.d("onCreate " + this);
@@ -107,6 +134,7 @@ public abstract class CameraActivity extends AppCompatActivity
     Toolbar toolbar = findViewById(R.id.toolbar);
     setSupportActionBar(toolbar);
     getSupportActionBar().setDisplayShowTitleEnabled(false);
+
 
     if (hasPermission()) {
       setFragment();
@@ -132,23 +160,112 @@ public abstract class CameraActivity extends AppCompatActivity
     });
 
     takeButton = findViewById(R.id.take_button);
+
     takeButton.setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View view) {
-        Intent intent = new Intent(getApplicationContext(), PictureActivity.class);
-        SerializableImage image = getImage();
-
-        intent.putExtra("image_", image);
-        startActivity(intent);
+        takePicture();
       }
     });
     //plusImageView.setOnClickListener(this);
     //minusImageView.setOnClickListener(this);
   }
 
-  SerializableImage getImage() {
-    return new SerializableImage();
+  public void takePicture(){
+    Intent imageTakeIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+    LOGGER.w("imageprinted 1");
+    if (imageTakeIntent.resolveActivity(getPackageManager()) != null){
+      LOGGER.w("imageprinted 2");
+        // 사진을 저장할 파일 생성
+        photoFile = createImageFile();
+        LOGGER.w("imageprinted 3");
+        // 파일을 정상 생성하였을 경우
+        if (photoFile != null) {
+          LOGGER.w("imageprinted 4");
+          photoURI = FileProvider.getUriForFile(this,
+                  "org.tensorflow.lite.examples.detection.FileProvider",    // 다른 앱에서 내 앱의 파일을 접근하기 위한 권한명 지정
+                  photoFile);
+          LOGGER.w("imageprinted 5");
+
+          imageTakeIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+          startActivityForResult(imageTakeIntent, REQUEST_TAKE_PHOTO);
+        }
+      }
+    }
+  @Override
+  protected void onActivityResult(int reqCode, int resCode, Intent data) {
+    super.onActivityResult(reqCode, resCode, data);
+    ContentResolver contentResolver = getContentResolver();
+    if (reqCode == REQUEST_TAKE_PHOTO) {
+      if (resCode == RESULT_OK) {
+        try {
+          if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            ImageDecoder.Source source = ImageDecoder.createSource(contentResolver, Uri.fromFile(photoFile));
+            ImageDecoder.decodeBitmap(source);
+
+          } else {
+            MediaStore.Images.Media.getBitmap(contentResolver, Uri.fromFile(photoFile));
+          }
+        } catch (Exception e) {
+          e.printStackTrace();
+        };
+
+        Intent intent = new Intent(CameraActivity.this, PictureActivity.class);
+        intent.putExtra("img_bitmap", photoFile.getPath());
+
+        startActivity(intent);
+//        setContentView(R.layout.tfe_od_activity_picture);//
+//        ImageView imageView = findViewById(R.id.picture_image_view);//
+//        imageView.setImageURI(photoURI);
+      }
+    }
+
   }
+
+  /*@Override
+          protected void onActivityResult(int requestCode, int resultCode, Intent data){
+              super.onActivityResult(requestCode, resultCode, data);
+              if (requestCode == REQUEST_IMAGE_CODE && resultCode == RESULT_OK) {
+
+
+              Bitmap imageBitmap = (Bitmap) getIntent().getExtras().get("data");
+
+              Intent intent = new Intent(CameraActivity.this, PictureActivity.class);
+              intent.putExtra("img_bitmap", imageBitmap);
+
+              startActivity(intent);
+              }
+            }
+
+*/
+  String imageFileName;
+  private String mCurrentPhotoPath;
+  static final String TAG = "MainActivity";
+
+  private File createImageFile() {
+    // Create an image file name
+    String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+    Log.d("timeStamp", timeStamp);
+    imageFileName = timeStamp + ".jpg";
+    File storageDir =  getExternalFilesDir(Environment.DIRECTORY_PICTURES);  // TODO: 외부저장소의 공용폴더에 저장할 때 사용할 것
+    //Log.d("imageFileName", imageFileName);
+    return new File(storageDir, imageFileName);
+
+    //File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+    //Log.d("storageDir", storageDir.toString());
+//    File image = File.createTempFile(
+//            imageFileName,  /* prefix */
+//            ".jpg",         /* suffix */
+//            storageDir      /* directory */
+//    );
+//    Log.d("image", image.toString());
+//
+//    // Save a file: path for use with ACTION_VIEW intents
+//    mCurrentPhotoPath = image.getAbsolutePath();
+//    Log.i(TAG, "Created file path: " + mCurrentPhotoPath);
+//    return image;
+  }
+
   protected int[] getRgbBytes() {
     imageConverter.run();
     return rgbBytes;
@@ -345,13 +462,25 @@ public abstract class CameraActivity extends AppCompatActivity
 
   private boolean hasPermission() {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-      return checkSelfPermission(PERMISSION_CAMERA) == PackageManager.PERMISSION_GRANTED;
+      return (checkSelfPermission(PERMISSION_CAMERA) == PackageManager.PERMISSION_GRANTED);
     } else {
       return true;
     }
   }
 
   private void requestPermission() {
+
+    /*int permission = ActivityCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+
+    if (permission != PackageManager.PERMISSION_GRANTED) {
+      // We don't have permission so prompt the user
+      ActivityCompat.requestPermissions(
+              activity,
+              PERMISSIONS_STORAGE,
+              REQUEST_EXTERNAL_STORAGE
+      );
+    }*/
+
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
       if (shouldShowRequestPermissionRationale(PERMISSION_CAMERA)) {
         Toast.makeText(
