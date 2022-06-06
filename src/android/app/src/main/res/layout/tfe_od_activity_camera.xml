@@ -15,6 +15,7 @@
 -->
 
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -26,12 +27,24 @@
         android:background="@android:color/black"
         android:orientation="vertical">
 
-
         <FrameLayout
             android:id="@+id/container"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            tools:context="org.tensorflow.demo.CameraActivity" >
+            tools:context="org.tensorflow.demo.CameraActivity">
+
+            <ImageView
+                android:id="@+id/picture_image_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/tfl2_logo" />
+
+            <Button
+                android:id="@+id/take_button"
+                android:layout_width="175dp"
+                android:layout_height="93dp"
+                android:layout_gravity="bottom|left"
+                android:text="Take Pickture" />
         </FrameLayout>
 
         <androidx.appcompat.widget.Toolbar
@@ -51,15 +64,9 @@
 
     <Button
         android:id="@+id/menu_button1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="right"
-        android:text="menu" />
+        android:layout_width="175dp"
+        android:layout_height="93dp"
+        android:layout_gravity="bottom|right"
+        android:text="My Closet" />
 
-    <Button
-        android:id="@+id/take_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|center"
-        android:text="take" />
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

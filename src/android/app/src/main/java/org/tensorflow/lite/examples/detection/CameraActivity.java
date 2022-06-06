@@ -80,7 +80,7 @@ public abstract class CameraActivity extends AppCompatActivity
         Camera.PreviewCallback,
         CompoundButton.OnCheckedChangeListener,
         View.OnClickListener {
-  private static final Logger LOGGER = new Logger();
+  private static final Logger LOGGER = new Logger(Log.ASSERT);
 
   private static final int PERMISSIONS_REQUEST = 1;
 
@@ -171,27 +171,20 @@ public abstract class CameraActivity extends AppCompatActivity
   }
 
   public void takePicture(){
-    LOGGER.e("take Picture");
     Intent imageTakeIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
     if (imageTakeIntent.resolveActivity(getPackageManager()) != null){
-        // 사진을 저장할 파일 생성
-        LOGGER.e("create file start");
-        photoFile = createImageFile();
-      LOGGER.e("create file done");
-        // 파일을 정상 생성하였을 경우
-        if (photoFile != null) {
-          LOGGER.e("get uri start");
-          photoURI = FileProvider.getUriForFile(this,
-                  "org.tensorflow.lite.examples.detection.FileProvider",    // 다른 앱에서 내 앱의 파일을 접근하기 위한 권한명 지정
-                  photoFile);
-          LOGGER.e("get uri done");
+      // 사진을 저장할 파일 생성
+      photoFile = createImageFile();
+      // 파일을 정상 생성하였을 경우
+      if (photoFile != null) {
+        photoURI = FileProvider.getUriForFile(this,
+                "org.tensorflow.lite.examples.detection.FileProvider",    // 다른 앱에서 내 앱의 파일을 접근하기 위한 권한명 지정
+                photoFile);
 
-          imageTakeIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
-          startActivityForResult(imageTakeIntent, REQUEST_TAKE_PHOTO);
-        }
-      } else {
-      LOGGER.e("take Picture failed");
-
+        imageTakeIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+        startActivityForResult(imageTakeIntent, REQUEST_TAKE_PHOTO);
+      }
+    } else {
     }
   }
   @Override
@@ -211,8 +204,9 @@ public abstract class CameraActivity extends AppCompatActivity
 
           String path = photoFile.getPath();
           rgbFrameBitmap = BitmapFactory.decodeFile(path);
-
-          onPreviewSizeChosen(new Size(rgbFrameBitmap.getWidth(), rgbFrameBitmap.getHeight()), 90);
+          if (croppedBitmap == null) {
+            onPreviewSizeChosen(new Size(rgbFrameBitmap.getWidth(), rgbFrameBitmap.getHeight()), 90);
+          }
           processImage();
         } catch (Exception e) {
           e.printStackTrace();
@@ -222,22 +216,6 @@ public abstract class CameraActivity extends AppCompatActivity
 
   }
 
-  /*@Override
-          protected void onActivityResult(int requestCode, int resultCode, Intent data){
-              super.onActivityResult(requestCode, resultCode, data);
-              if (requestCode == REQUEST_IMAGE_CODE && resultCode == RESULT_OK) {
-
-
-              Bitmap imageBitmap = (Bitmap) getIntent().getExtras().get("data");
-
-              Intent intent = new Intent(CameraActivity.this, PictureActivity.class);
-              intent.putExtra("img_bitmap", imageBitmap);
-
-              startActivity(intent);
-              }
-            }
-
-*/
   String imageFileName;
   private String mCurrentPhotoPath;
   static final String TAG = "MainActivity";
@@ -250,20 +228,6 @@ public abstract class CameraActivity extends AppCompatActivity
     File storageDir =  getExternalFilesDir(Environment.DIRECTORY_PICTURES);  // TODO: 외부저장소의 공용폴더에 저장할 때 사용할 것
     //Log.d("imageFileName", imageFileName);
     return new File(storageDir, imageFileName);
-
-    //File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-    //Log.d("storageDir", storageDir.toString());
-//    File image = File.createTempFile(
-//            imageFileName,  /* prefix */
-//            ".jpg",         /* suffix */
-//            storageDir      /* directory */
-//    );
-//    Log.d("image", image.toString());
-//
-//    // Save a file: path for use with ACTION_VIEW intents
-//    mCurrentPhotoPath = image.getAbsolutePath();
-//    Log.i(TAG, "Created file path: " + mCurrentPhotoPath);
-//    return image;
   }
 
   protected int[] getRgbBytes() {
@@ -566,7 +530,7 @@ public abstract class CameraActivity extends AppCompatActivity
           new LegacyCameraConnectionFragment(this, getLayoutId(), getDesiredPreviewFrameSize());
     }
 
-    getFragmentManager().beginTransaction().replace(R.id.container, fragment).commit();
+    //getFragmentManager().beginTransaction().replace(R.id.container, fragment).commit();
   }
 
   protected void fillBytes(final Plane[] planes, final byte[][] yuvBytes) {

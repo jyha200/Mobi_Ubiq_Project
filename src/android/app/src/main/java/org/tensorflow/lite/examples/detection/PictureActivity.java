@@ -121,6 +121,12 @@ public class PictureActivity extends AppCompatActivity {
       return(row);
     }
   }
+  private DialogInterface.OnClickListener returnAndFinish = new DialogInterface.OnClickListener() {
+    @Override
+    public void onClick(DialogInterface dialog, int id) {
+      finish();
+    }
+  };
 
   @Override
   protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -151,15 +157,16 @@ public class PictureActivity extends AppCompatActivity {
             public void onClick(DialogInterface dialog, int id) {
               String clothName = input.getText().toString();
               CameraActivity.dbHandler.addNewUserDataLabelRow(clothName, labels.toArray(new String[labels.size()]));
+              finish();
             }
           });
           builder.create().show();
         }
       });
-      builder.setNegativeButton("Cancel", null);
+      builder.setNegativeButton("Cancel", returnAndFinish);
     } else {
       builder.setMessage("No label recognized");
-      builder.setNeutralButton("OK", null);
+      builder.setNeutralButton("OK", returnAndFinish);
     }
     builder.create().show();
   }

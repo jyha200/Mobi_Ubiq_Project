@@ -51,7 +51,7 @@
             android:id="@+id/picture_image_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:src="@drawable/caret" />
+            android:src="@drawable/tfl2_logo" />
     </LinearLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
