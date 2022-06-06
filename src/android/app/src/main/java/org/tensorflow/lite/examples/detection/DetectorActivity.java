@@ -19,6 +19,7 @@ package org.tensorflow.lite.examples.detection;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
@@ -78,9 +79,6 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
   private Detector detector;
 
   private long lastProcessingTimeMs;
-  private Bitmap rgbFrameBitmap = null;
-  private Bitmap croppedBitmap = null;
-  private Bitmap cropCopyBitmap = null;
 
   private boolean computingDetection = false;
 
@@ -165,12 +163,6 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
   @Override
   protected void processImage() {
-
-    //getting image from CameraActivity
-    Intent intent = getIntent();
-    label_image = (File) intent.getSerializableExtra("img");
-    label_uri = (Uri) intent.getSerializableExtra("photoFile");
-
 
     ++timestamp;
     final long currTimestamp = timestamp;

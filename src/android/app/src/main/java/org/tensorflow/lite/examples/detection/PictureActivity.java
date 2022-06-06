@@ -4,6 +4,8 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Camera;
 import android.media.Image;
 import android.os.Bundle;
@@ -123,10 +125,17 @@ public class PictureActivity extends AppCompatActivity {
   @Override
   protected void onCreate(@Nullable Bundle savedInstanceState) {
     super.onCreate(null);
-    setContentView(R.layout.tfe_od_activity_picture);
-    ImageView imageView = findViewById(R.id.picture_image_view);
-    imageView.setImageResource(R.drawable.sample_image);
-    SerializableImage image = (SerializableImage)getIntent().getSerializableExtra("image_");
+
+    Intent intent = getIntent();
+    String path = intent.getExtras().getString("img_bitmap");
+    Bitmap bmp = BitmapFactory.decodeFile(path);
+
+    setContentView(R.layout.tfe_od_activity_picture);//
+    ImageView imageView = findViewById(R.id.picture_image_view);//
+    imageView.setImageBitmap(bmp);
+
+    //imageView.setImageResource(R.drawable.sample_image);
+    /*SerializableImage image = (SerializableImage)getIntent().getSerializableExtra("image_");
     List<String> labels = getLabels(image.image);
     AlertDialog.Builder builder = new AlertDialog.Builder(PictureActivity.this);
     builder.setTitle("Confirm Recognized Labels");
@@ -156,7 +165,7 @@ public class PictureActivity extends AppCompatActivity {
       builder.setMessage("No label recognized");
       builder.setNeutralButton("OK", null);
     }
-    builder.create().show();
+    builder.create().show();*/
   }
 
   List<String> getLabels(Image image) {
