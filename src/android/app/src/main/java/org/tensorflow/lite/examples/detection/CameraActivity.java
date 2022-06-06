@@ -135,7 +135,6 @@ public abstract class CameraActivity extends AppCompatActivity
     setSupportActionBar(toolbar);
     getSupportActionBar().setDisplayShowTitleEnabled(false);
 
-
     if (hasPermission()) {
       setFragment();
     } else {
@@ -172,26 +171,29 @@ public abstract class CameraActivity extends AppCompatActivity
   }
 
   public void takePicture(){
+    LOGGER.e("take Picture");
     Intent imageTakeIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-    LOGGER.w("imageprinted 1");
     if (imageTakeIntent.resolveActivity(getPackageManager()) != null){
-      LOGGER.w("imageprinted 2");
         // 사진을 저장할 파일 생성
+        LOGGER.e("create file start");
         photoFile = createImageFile();
-        LOGGER.w("imageprinted 3");
+      LOGGER.e("create file done");
         // 파일을 정상 생성하였을 경우
         if (photoFile != null) {
-          LOGGER.w("imageprinted 4");
+          LOGGER.e("get uri start");
           photoURI = FileProvider.getUriForFile(this,
                   "org.tensorflow.lite.examples.detection.FileProvider",    // 다른 앱에서 내 앱의 파일을 접근하기 위한 권한명 지정
                   photoFile);
-          LOGGER.w("imageprinted 5");
+          LOGGER.e("get uri done");
 
           imageTakeIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
           startActivityForResult(imageTakeIntent, REQUEST_TAKE_PHOTO);
         }
-      }
+      } else {
+      LOGGER.e("take Picture failed");
+
     }
+  }
   @Override
   protected void onActivityResult(int reqCode, int resCode, Intent data) {
     super.onActivityResult(reqCode, resCode, data);
@@ -206,17 +208,15 @@ public abstract class CameraActivity extends AppCompatActivity
           } else {
             MediaStore.Images.Media.getBitmap(contentResolver, Uri.fromFile(photoFile));
           }
+
+          String path = photoFile.getPath();
+          rgbFrameBitmap = BitmapFactory.decodeFile(path);
+
+          onPreviewSizeChosen(new Size(rgbFrameBitmap.getWidth(), rgbFrameBitmap.getHeight()), 90);
+          processImage();
         } catch (Exception e) {
           e.printStackTrace();
         };
-
-        Intent intent = new Intent(CameraActivity.this, PictureActivity.class);
-        intent.putExtra("img_bitmap", photoFile.getPath());
-
-        startActivity(intent);
-//        setContentView(R.layout.tfe_od_activity_picture);//
-//        ImageView imageView = findViewById(R.id.picture_image_view);//
-//        imageView.setImageURI(photoURI);
       }
     }
 
@@ -282,110 +282,110 @@ public abstract class CameraActivity extends AppCompatActivity
   /** Callback for android.hardware.Camera API */
   @Override
   public void onPreviewFrame(final byte[] bytes, final Camera camera) {
-    if (isProcessingFrame) {
-      LOGGER.w("Dropping frame!");
-      return;
-    }
-
-    try {
-      // Initialize the storage bitmaps once when the resolution is known.
-      if (rgbBytes == null) {
-        Camera.Size previewSize = camera.getParameters().getPreviewSize();
-        previewHeight = previewSize.height;
-        previewWidth = previewSize.width;
-        rgbBytes = new int[previewWidth * previewHeight];
-        onPreviewSizeChosen(new Size(previewSize.width, previewSize.height), 90);
-      }
-    } catch (final Exception e) {
-      LOGGER.e(e, "Exception!");
-      return;
-    }
-
-    isProcessingFrame = true;
-    yuvBytes[0] = bytes;
-    yRowStride = previewWidth;
-
-    imageConverter =
-        new Runnable() {
-          @Override
-          public void run() {
-            ImageUtils.convertYUV420SPToARGB8888(bytes, previewWidth, previewHeight, rgbBytes);
-          }
-        };
-
-    postInferenceCallback =
-        new Runnable() {
-          @Override
-          public void run() {
-            camera.addCallbackBuffer(bytes);
-            isProcessingFrame = false;
-          }
-        };
-    processImage();
+//    if (isProcessingFrame) {
+//      LOGGER.w("Dropping frame!");
+//      return;
+//    }
+//
+//    try {
+//      // Initialize the storage bitmaps once when the resolution is known.
+//      if (rgbBytes == null) {
+//        Camera.Size previewSize = camera.getParameters().getPreviewSize();
+//        previewHeight = previewSize.height;
+//        previewWidth = previewSize.width;
+//        rgbBytes = new int[previewWidth * previewHeight];
+//        onPreviewSizeChosen(new Size(previewSize.width, previewSize.height), 90);
+//      }
+//    } catch (final Exception e) {
+//      LOGGER.e(e, "Exception!");
+//      return;
+//    }
+//
+//    isProcessingFrame = true;
+//    yuvBytes[0] = bytes;
+//    yRowStride = previewWidth;
+//
+//    imageConverter =
+//        new Runnable() {
+//          @Override
+//          public void run() {
+//            ImageUtils.convertYUV420SPToARGB8888(bytes, previewWidth, previewHeight, rgbBytes);
+//          }
+//        };
+//
+//    postInferenceCallback =
+//        new Runnable() {
+//          @Override
+//          public void run() {
+//            camera.addCallbackBuffer(bytes);
+//            isProcessingFrame = false;
+//          }
+//        };
+//    processImage();
   }
 
   /** Callback for Camera2 API */
   @Override
   public void onImageAvailable(final ImageReader reader) {
-    // We need wait until we have some size from onPreviewSizeChosen
-    if (previewWidth == 0 || previewHeight == 0) {
-      return;
-    }
-    if (rgbBytes == null) {
-      rgbBytes = new int[previewWidth * previewHeight];
-    }
-    try {
-      final Image image = reader.acquireLatestImage();
-
-      if (image == null) {
-        return;
-      }
-
-      if (isProcessingFrame) {
-        image.close();
-        return;
-      }
-      isProcessingFrame = true;
-      Trace.beginSection("imageAvailable");
-      final Plane[] planes = image.getPlanes();
-      fillBytes(planes, yuvBytes);
-      yRowStride = planes[0].getRowStride();
-      final int uvRowStride = planes[1].getRowStride();
-      final int uvPixelStride = planes[1].getPixelStride();
-
-      imageConverter =
-          new Runnable() {
-            @Override
-            public void run() {
-              ImageUtils.convertYUV420ToARGB8888(
-                  yuvBytes[0],
-                  yuvBytes[1],
-                  yuvBytes[2],
-                  previewWidth,
-                  previewHeight,
-                  yRowStride,
-                  uvRowStride,
-                  uvPixelStride,
-                  rgbBytes);
-            }
-          };
-
-      postInferenceCallback =
-          new Runnable() {
-            @Override
-            public void run() {
-              image.close();
-              isProcessingFrame = false;
-            }
-          };
-
-      processImage();
-    } catch (final Exception e) {
-      LOGGER.e(e, "Exception!");
-      Trace.endSection();
-      return;
-    }
-    Trace.endSection();
+//    // We need wait until we have some size from onPreviewSizeChosen
+//    if (previewWidth == 0 || previewHeight == 0) {
+//      return;
+//    }
+//    if (rgbBytes == null) {
+//      rgbBytes = new int[previewWidth * previewHeight];
+//    }
+//    try {
+//      final Image image = reader.acquireLatestImage();
+//
+//      if (image == null) {
+//        return;
+//      }
+//
+//      if (isProcessingFrame) {
+//        image.close();
+//        return;
+//      }
+//      isProcessingFrame = true;
+//      Trace.beginSection("imageAvailable");
+//      final Plane[] planes = image.getPlanes();
+//      fillBytes(planes, yuvBytes);
+//      yRowStride = planes[0].getRowStride();
+//      final int uvRowStride = planes[1].getRowStride();
+//      final int uvPixelStride = planes[1].getPixelStride();
+//
+//      imageConverter =
+//          new Runnable() {
+//            @Override
+//            public void run() {
+//              ImageUtils.convertYUV420ToARGB8888(
+//                  yuvBytes[0],
+//                  yuvBytes[1],
+//                  yuvBytes[2],
+//                  previewWidth,
+//                  previewHeight,
+//                  yRowStride,
+//                  uvRowStride,
+//                  uvPixelStride,
+//                  rgbBytes);
+//            }
+//          };
+//
+//      postInferenceCallback =
+//          new Runnable() {
+//            @Override
+//            public void run() {
+//              image.close();
+//              isProcessingFrame = false;
+//            }
+//          };
+//
+//      processImage();
+//    } catch (final Exception e) {
+//      LOGGER.e(e, "Exception!");
+//      Trace.endSection();
+//      return;
+//    }
+//    Trace.endSection();
   }
 
   @Override

@@ -25,5 +25,5 @@ import java.util.HashMap;
 import java.util.List;
 
 public class SerializableImage implements Serializable {
-  Image image;
+  List<String> image;
 }

@@ -58,8 +58,6 @@ import org.tensorflow.lite.examples.detection.tracking.MultiBoxTracker;
  */
 public class DetectorActivity extends CameraActivity implements OnImageAvailableListener {
   private static final Logger LOGGER = new Logger();
-  private String[] guide = new String[6];
-  private String[] shown_idx = {"","","","","",""};
 
   // Configuration values for the prepackaged SSD model.
   private static final int TF_OD_API_INPUT_SIZE = 300;
@@ -132,7 +130,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
     LOGGER.i("Camera orientation relative to screen canvas: %d", sensorOrientation);
 
     LOGGER.i("Initializing at size %dx%d", previewWidth, previewHeight);
-    rgbFrameBitmap = Bitmap.createBitmap(previewWidth, previewHeight, Config.ARGB_8888);
+    //rgbFrameBitmap = Bitmap.createBitmap(previewWidth, previewHeight, Config.ARGB_8888);
     croppedBitmap = Bitmap.createBitmap(cropSize, cropSize, Config.ARGB_8888);
 
     frameToCropTransform =
@@ -164,108 +162,45 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
   @Override
   protected void processImage() {
 
-    ++timestamp;
-    final long currTimestamp = timestamp;
-    trackingOverlay.postInvalidate();
-
-    // No mutex needed as this method is not reentrant.
-    if (computingDetection) {
-      readyForNextImage();
-      return;
-    }
-    computingDetection = true;
-    LOGGER.i("Preparing image " + currTimestamp + " for detection in bg thread.");
-
-    rgbFrameBitmap.setPixels(getRgbBytes(), 0, previewWidth, 0, 0, previewWidth, previewHeight);
-
-    readyForNextImage();
-
     final Canvas canvas = new Canvas(croppedBitmap);
     canvas.drawBitmap(rgbFrameBitmap, frameToCropTransform, null);
     // For examining the actual TF input.
     if (SAVE_PREVIEW_BITMAP) {
       ImageUtils.saveBitmap(croppedBitmap);
     }
+//    LOGGER.i("Running detection on image " + currTimestamp);
+    final long startTime = SystemClock.uptimeMillis();
+    final List<Detector.Recognition> results = detector.recognizeImage(croppedBitmap);
+    lastProcessingTimeMs = SystemClock.uptimeMillis() - startTime;
 
-    runInBackground(
-        new Runnable() {
-          @Override
-          public void run() {
-            if (stopped == false) {
-              LOGGER.i("Running detection on image " + currTimestamp);
-              final long startTime = SystemClock.uptimeMillis();
-              final List<Detector.Recognition> results = detector.recognizeImage(croppedBitmap);
-              lastProcessingTimeMs = SystemClock.uptimeMillis() - startTime;
+    cropCopyBitmap = Bitmap.createBitmap(croppedBitmap);
 
-              cropCopyBitmap = Bitmap.createBitmap(croppedBitmap);
-              final Canvas canvas = new Canvas(cropCopyBitmap);
-              final Paint paint = new Paint();
-              paint.setColor(Color.RED);
-              paint.setStyle(Style.STROKE);
-              paint.setStrokeWidth(2.0f);
+    float minimumConfidence = MINIMUM_CONFIDENCE_TF_OD_API;
+    switch (MODE) {
+      case TF_OD_API:
+        minimumConfidence = MINIMUM_CONFIDENCE_TF_OD_API;
+        break;
+    }
 
-              float minimumConfidence = MINIMUM_CONFIDENCE_TF_OD_API;
-              switch (MODE) {
-                case TF_OD_API:
-                  minimumConfidence = MINIMUM_CONFIDENCE_TF_OD_API;
-                  break;
-              }
-
-              final List<Detector.Recognition> mappedRecognitions =
-                      new ArrayList<Detector.Recognition>();
-              int i = 0;
-              Collections.sort(results);
-              for (final Detector.Recognition result : results) {
-                final RectF location = result.getLocation();
-                if (location != null && result.getConfidence() >= minimumConfidence) {
-                  canvas.drawRect(location, paint);
-                  int idx = Integer.parseInt(result.getId());
-                  boolean do_not_show = false;
-                  String title = result.getTitle();
-                  for (int j = 0; j < 6; j++) {
-                    if (shown_idx[j].equals(title)) {
-                      do_not_show = true;
-                      break;
-                    }
-                  }
-                  if (do_not_show == false) {
-                    if (i < 6) {
-                      guide[i] = PictureActivity.reference_guide.get(title);
-                      shown_idx[i] = title;
-                      i++;
-                    }
-                  }
-                  cropToFrameTransform.mapRect(location);
-
-                  result.setLocation(location);
-                  mappedRecognitions.add(result);
-                }
-              }
-              for (; i < 6; i++) {
-                guide[i] = "";
-                shown_idx[i] = "";
-              }
-
-              tracker.trackResults(mappedRecognitions, currTimestamp);
-              trackingOverlay.postInvalidate();
-
-              computingDetection = false;
-
-            }
-            runOnUiThread(
-                    new Runnable() {
-                      @Override
-                      public void run() {
-                        for (int i = 1; i <= 6; i++) {
-                          showGuide(i, guide[i - 1]);
-                        }
-                        //showFrameInfo(previewWidth + "x" + previewHeight);
-                        //showCropInfo(cropCopyBitmap.getWidth() + "x" + cropCopyBitmap.getHeight());
-                        //showInference(lastProcessingTimeMs + "ms");
-                      }
-                    });
-          }
-        });
+    final List<Detector.Recognition> mappedRecognitions =
+            new ArrayList<Detector.Recognition>();
+    Collections.sort(results);
+    List<String> guides = new ArrayList<>();
+    for (final Detector.Recognition result : results) {
+      final RectF location = result.getLocation();
+      if (location != null && result.getConfidence() >= minimumConfidence) {
+        int idx = Integer.parseInt(result.getId());
+        boolean do_not_show = false;
+        String title = result.getTitle();
+        guides.add(title);
+      }
+    }
+    SerializableImage sImage = new SerializableImage();
+    computingDetection = false;
+    Intent intent = new Intent(this, PictureActivity.class);
+    intent.putExtra("guides", sImage);
+    sImage.image = guides;
+    startActivity(intent);
   }
 
   @Override

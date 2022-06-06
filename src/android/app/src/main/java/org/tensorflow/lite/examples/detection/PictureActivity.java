@@ -127,16 +127,12 @@ public class PictureActivity extends AppCompatActivity {
     super.onCreate(null);
 
     Intent intent = getIntent();
-    String path = intent.getExtras().getString("img_bitmap");
-    Bitmap bmp = BitmapFactory.decodeFile(path);
+    SerializableImage image = (SerializableImage) intent.getExtras().getSerializable("guides");
 
     setContentView(R.layout.tfe_od_activity_picture);//
     ImageView imageView = findViewById(R.id.picture_image_view);//
-    imageView.setImageBitmap(bmp);
 
-    //imageView.setImageResource(R.drawable.sample_image);
-    /*SerializableImage image = (SerializableImage)getIntent().getSerializableExtra("image_");
-    List<String> labels = getLabels(image.image);
+    List<String> labels = image.image;
     AlertDialog.Builder builder = new AlertDialog.Builder(PictureActivity.this);
     builder.setTitle("Confirm Recognized Labels");
 
@@ -165,11 +161,6 @@ public class PictureActivity extends AppCompatActivity {
       builder.setMessage("No label recognized");
       builder.setNeutralButton("OK", null);
     }
-    builder.create().show();*/
-  }
-
-  List<String> getLabels(Image image) {
-    List<String> ret = new ArrayList<>();
-    return ret;
+    builder.create().show();
   }
 }
